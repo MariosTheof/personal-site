@@ -1,0 +1,178 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import Container from "@components/Container.astro";
+---
+
+<PageLayout title="Code Art" description="Generative art created with code">
+  <!-- Intro Section with Container -->
+  <Container>
+    <div class="animate py-10">
+      <h1 class="text-2xl font-semibold text-black dark:text-white">
+       Code & Art
+      </h1>
+      <p class="mt-4 text-gray-600 dark:text-gray-400">
+	Exploring the intersection of programming and creativity through generative art and algorithmic beauty.
+      </p>
+    </div>
+  </Container>
+
+  <!-- Full-Screen Art Gallery -->
+  <div class="w-full">
+    <!-- Ink Drawing Simulation - Full Screen -->
+    <div class="animate mb-8">
+      <div class="relative group">
+        <div id="ink-canvas" class="w-full h-screen cursor-pointer"></div>
+      </div>
+    </div>
+  </div>
+</PageLayout>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+<script>
+  // Wait for p5.js to load
+  window.addEventListener('load', function() {
+
+    // Ink Drawing Simulation
+    new p5((p) => {
+      let particles = []; // array of particles
+      let maxParticles = 30000; // Limit total particles for performance
+      let frameCounter = 0;
+      let addNewParticles = true;
+
+      p.setup = () => {
+        const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+        canvas.parent('ink-canvas');
+        p.background(200, 120, 30, 20);
+      };
+
+      p.draw = () => {
+        // Only add new particles every few frames and if under limit
+        if (addNewParticles && frameCounter % 60 === 0 && particles.length < maxParticles) {
+          // Original hardcoded positions from your example
+          particles.push(new Particle(734, 821, 5, 75));
+          particles.push(new Particle(412, 275, 5, 75));
+          particles.push(new Particle(1238, 475, 5, 75));
+          particles.push(new Particle(1438, 275, 5, 75));
+          particles.push(new Particle(734, 132, 5, 75));
+
+          particles.push(new Particle(823, 476, 5, 75));
+          particles.push(new Particle(1574, 928, 5, 75));
+          particles.push(new Particle(289, 312, 5, 75));
+          particles.push(new Particle(1012, 742, 5, 75));
+          particles.push(new Particle(1789, 214, 5, 75));
+          particles.push(new Particle(634, 995, 5, 75));
+          particles.push(new Particle(1422, 587, 5, 75));
+
+          particles.push(new Particle(347, 829, 5, 75));
+          particles.push(new Particle(1289, 237, 5, 75));
+          particles.push(new Particle(1782, 654, 5, 75));
+          particles.push(new Particle(932, 981, 5, 75));
+          particles.push(new Particle(411, 523, 5, 75));
+          particles.push(new Particle(1567, 114, 5, 75));
+          particles.push(new Particle(89, 672, 5, 75));
+        }
+
+        frameCounter++;
+
+        // Update and show the particles
+        for (let i = particles.length - 1; i >= 0; i--) {
+          particles[i].update(particles);
+          particles[i].show();
+          if (particles[i].alpha <= 2) {
+            particles.splice(i, 1); // remove the dead particle
+          }
+        }
+      };
+
+      // Particle class
+      class Particle {
+        // Constructor called when creating an instance of this class
+        // x & y are the location, r is the rate of decay, a is the starting alpha value
+        constructor(x, y, r, a) {
+          this.location = p.createVector(x, y);
+          this.velocity = p.createVector(p.random(-1, 1), p.random(-1, 1));
+          this.acceleration = p.createVector();
+          this.alpha = this.palpha = a;
+          this.amp = 3; // size of the particle
+          this.rate = r;
+        }
+
+        // Update the velocity and location of particle
+        update(particleArray) {
+          this.acceleration.add(p.createVector(
+            (p.noise(this.location.x) * 2 - 1),
+            (p.noise(this.location.y) * 2 - 1)
+          ));
+          this.velocity.add(this.acceleration);
+          this.acceleration.set(0, 0);
+          this.location.add(this.velocity);
+          this.alpha -= this.rate;
+
+          // Here is the recursion condition
+          if (this.alpha <= this.palpha * 0.25 && this.palpha > 10) {
+            particleArray.push(new Particle(
+              this.location.x,
+              this.location.y,
+              this.rate * 0.25,
+              this.palpha * 0.5
+            ));
+          }
+        }
+
+        // Show the particles
+        show() {
+          p.noStroke();
+          p.fill(0, 35, 25, this.alpha);
+          p.ellipse(this.location.x, this.location.y, this.amp);
+        }
+      }
+
+      // Handle window resize
+      p.windowResized = () => {
+        p.resizeCanvas(p.windowWidth, p.windowHeight);
+        p.background(200, 120, 30, 20);
+        particles = []; // Clear particles on resize
+      };
+
+      // Mouse interaction - add particles where user clicks
+      p.mousePressed = () => {
+        if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+          for (let i = 0; i < 5; i++) {
+            particles.push(new Particle(
+              p.mouseX + p.random(-20, 20),
+              p.mouseY + p.random(-20, 20),
+              5,
+              75
+            ));
+          }
+        }
+      };
+    });
+
+  }); // Close window.addEventListener
+</script>
+
+<style>
+  canvas {
+    background: linear-gradient(135deg, #c8781e 0%, #d4a574 100%);
+    display: block;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Ensure no horizontal overflow */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Make canvas containers full width without container constraints */
+  #ink-canvas {
+    width: 100vw !important;
+    height: 100vh !important;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
+</style>
