@@ -162,7 +162,7 @@ const work = await Promise.all(
           </p>
         </article>
         <ul class="flex flex-wrap gap-2">
-          {SOCIALS.map(SOCIAL => (
+          {SOCIALS.map((SOCIAL) => (
             <li class="flex gap-x-2 text-nowrap">
               <Link href={SOCIAL.HREF} external aria-label={`${SITE.NAME} on ${SOCIAL.NAME}`}>
                 {SOCIAL.NAME}

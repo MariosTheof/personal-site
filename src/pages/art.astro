@@ -33,8 +33,8 @@ import Container from "@components/Container.astro";
   window.addEventListener('load', function() {
 
     // Ink Drawing Simulation
-    new p5((p) => {
-      let particles = []; // array of particles
+    new (window as any).p5((p: any) => {
+      let particles: any[] = []; // array of particles
       let maxParticles = 30000; // Limit total particles for performance
       let frameCounter = 0;
       let addNewParticles = true;
@@ -86,9 +86,17 @@ import Container from "@components/Container.astro";
 
       // Particle class
       class Particle {
+        location: any;
+        velocity: any;
+        acceleration: any;
+        alpha: number;
+        palpha: number;
+        amp: number;
+        rate: number;
+        
         // Constructor called when creating an instance of this class
         // x & y are the location, r is the rate of decay, a is the starting alpha value
-        constructor(x, y, r, a) {
+        constructor(x: number, y: number, r: number, a: number) {
           this.location = p.createVector(x, y);
           this.velocity = p.createVector(p.random(-1, 1), p.random(-1, 1));
           this.acceleration = p.createVector();
@@ -98,7 +106,7 @@ import Container from "@components/Container.astro";
         }
 
         // Update the velocity and location of particle
-        update(particleArray) {
+        update(particleArray: any[]) {
           this.acceleration.add(p.createVector(
             (p.noise(this.location.x) * 2 - 1),
             (p.noise(this.location.y) * 2 - 1)
