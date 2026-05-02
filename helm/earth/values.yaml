@@ -5,6 +5,7 @@ imagePullSecrets:
 
 image:
   repository: ghcr.io/mariostheof/earth
+  # IMPORTANT: must be lowercase for GHCR
   tag: latest
   pullPolicy: IfNotPresent
 
