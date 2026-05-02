@@ -36,6 +36,7 @@ spec:
               drop:
                 - ALL
             runAsNonRoot: true
+            runAsUser: 101
           livenessProbe:
             httpGet:
               path: /
