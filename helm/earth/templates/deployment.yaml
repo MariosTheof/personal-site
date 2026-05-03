@@ -18,25 +18,14 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      securityContext:
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: 80
               protocol: TCP
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
-            runAsNonRoot: true
-            runAsUser: 101
           livenessProbe:
             httpGet:
               path: /

@@ -5,6 +5,6 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-FROM nginxinc/nginx-unprivileged:alpine
+FROM nginx:alpine
 COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 8080
+EXPOSE 80
