@@ -5,7 +5,7 @@ import tailwind from "@astrojs/tailwind";
 import vue from "@astrojs/vue";
 
 export default defineConfig({
-  site: "https://your-domain.com", // Update this with your domain
+  site: "https://marios.istos.dev",
   integrations: [mdx(), sitemap(), tailwind(), vue()],
   vite: {
     resolve: {
