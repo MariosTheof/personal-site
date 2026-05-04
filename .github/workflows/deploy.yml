@@ -75,3 +75,17 @@ jobs:
             --namespace default \
             --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
             --set image.tag=${{ needs.build-and-push.outputs.image-tag }}
+
+  prune:
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Delete old container versions
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: earth
+          package-type: container
+          min-versions-to-keep: 10
+          delete-only-pre-release-versions: false
