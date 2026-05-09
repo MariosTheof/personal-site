@@ -64,6 +64,10 @@ const { title, description, image = "/nano.png" } = Astro.props;
 <!-- RSS Link -->
 <link rel="alternate" type="application/rss+xml" title={SITE.NAME} href={new URL("rss.xml", Astro.site)} />
 
+{import.meta.env.PROD && (
+  <script defer src="https://umami.istos.dev/script.js" data-website-id="8fd1e461-3aff-49b9-8e3d-0ac6f68a187e"></script>
+)}
+
 <script>
   import type { TransitionBeforeSwapEvent } from "astro:transitions/client";
   document.addEventListener("astro:before-swap", (e) =>
