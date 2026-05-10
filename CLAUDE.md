@@ -34,6 +34,16 @@ No test framework configured. No linter configured.
 
 **Vue integration**: `@astrojs/vue` is configured for interactive components (Astro islands).
 
+## Analytics
+
+Self-hosted Umami tracker is injected in `src/components/Head.astro`, gated by `import.meta.env.PROD` so `npm run dev` does not pollute stats.
+
+- Endpoint: `https://umami.istos.dev/script.js`
+- Website ID: `8fd1e461-3aff-49b9-8e3d-0ac6f68a187e`
+- Dashboard: `https://umami.istos.dev` (Cloudflare Access SSO)
+
+The Umami stack itself lives in the `lab/oci` repo (`umami.tf`).
+
 ## Adding Content
 
 New blog post: create `src/content/blog/NN-slug/index.md` with frontmatter: `title`, `description`, `date`, optional `draft: true`.
