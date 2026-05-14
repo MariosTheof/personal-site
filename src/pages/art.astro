@@ -27,13 +27,22 @@ import Container from "@components/Container.astro";
   </div>
 </PageLayout>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.7.0/p5.min.js"></script>
 <script>
-  // Wait for p5.js to load
-  window.addEventListener('load', function() {
+  let inkP5: any = null;
 
-    // Ink Drawing Simulation
-    new (window as any).p5((p: any) => {
+  function initInkArt() {
+    const target = document.getElementById('ink-canvas');
+    if (!target) return; // not on the art page
+    if (typeof (window as any).p5 === 'undefined') return; // p5 not loaded yet
+
+    // Clean up any previous instance (after a view transition)
+    if (inkP5) {
+      inkP5.remove();
+      inkP5 = null;
+    }
+
+    inkP5 = new (window as any).p5((p: any) => {
       let particles: any[] = []; // array of particles
       let maxParticles = 30000; // Limit total particles for performance
       let frameCounter = 0;
@@ -156,8 +165,15 @@ import Container from "@components/Container.astro";
         }
       };
     });
+  } // close initInkArt
 
-  }); // Close window.addEventListener
+  document.addEventListener('astro:page-load', initInkArt);
+  document.addEventListener('astro:before-swap', () => {
+    if (inkP5) {
+      inkP5.remove();
+      inkP5 = null;
+    }
+  });
 </script>
 
 <style>
