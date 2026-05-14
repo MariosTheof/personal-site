@@ -1,12 +1,8 @@
 ---
 company: "G.N.T. Information Systems S.A."
 role: "Software Engineer"
-dateStart: "03/01/2019"
-dateEnd: "10/01/2019"
+dateStart: "2019-03-01"
+dateEnd: "2019-10-01"
 ---
 
-• Developed & maintained Interactive Voice Response (IVR) systems for corporate clients using agile/SCRUM methodologies.
-
-• Added new features & fixed system bugs. Sped up the testing process up to 300% by revamping our local testing systems, using mock data, bash pipelines & automations, and mirroring web services.
-
-• Developed an IVR demo from scratch to be used by the Sales department.
+Built IVR systems for corporate clients; rewrote the local testing harness (mock data, bash pipelines, service mirroring) for ~3× faster test cycles.

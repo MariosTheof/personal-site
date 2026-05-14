@@ -1,7 +1,7 @@
 ---
 title: "How I Run This Site on a $0 Kubernetes Cluster"
 description: "The Terraform, k3s, and Traefik setup behind a 2-node Kubernetes cluster on Oracle Cloud's Always Free tier — 4 ARM cores, 24 GB RAM, $0/month."
-date: "May 4 2026"
+date: "2026-05-04"
 ---
 
 The site you're reading right now is served from a Kubernetes cluster I pay nothing for. Two ARM nodes, 4 OCPUs, 24 GB of RAM, a free MySQL database on a private subnet, automatic TLS, and an ingress controller — all on Oracle Cloud's Always Free tier. The bill at the end of the month is, genuinely, zero.

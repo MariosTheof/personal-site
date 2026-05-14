@@ -1,7 +1,7 @@
 ---
 title: "Why I Moved My Analytics Off Vercel and Onto a Free MySQL Box"
 description: "Vercel Analytics charges per event overage. Why I moved to self-hosted Umami on a free Oracle HeatWave instance — and three things that bit me along the way."
-date: "May 10 2026"
+date: "2026-05-11"
 ---
 
 Vercel Analytics is fine until your site grows. The free tier caps events; the Pro tier charges $0.00003 per overage event ([Vercel](https://vercel.com/docs/analytics/limits-and-pricing), 2026), and once you've crossed that line you're paying for a dashboard you can't query. I had something else sitting on my Oracle account for months: a free MySQL HeatWave instance, attached to the same VCN as my K3s cluster, doing nothing. So I moved analytics there.

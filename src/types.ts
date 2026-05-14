@@ -15,3 +15,10 @@ export type Socials = {
   NAME: string;
   HREF: string;
 }[];
+
+export type SkillGroup = {
+  group: string;
+  items: string[];
+};
+
+export type Skills = SkillGroup[];

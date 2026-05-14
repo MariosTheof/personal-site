@@ -1,7 +1,7 @@
 ---
 title: "How I Expose Self-Hosted Services Without Opening a Single Port"
 description: "Cloudflare Tunnel and Access run my Grafana, Umami, and internal dashboards with zero inbound ports — and per-path bypass lets the public bits stay public."
-date: "May 10 2026"
+date: "2026-05-10"
 ---
 
 Three services on my home cluster — Grafana for monitoring, Umami for analytics, and a couple of internal dashboards — are reachable from anywhere on the public internet. The K3s nodes don't have anything listening on port 80 or 443 for any of them. That isn't a paradox. It's how Cloudflare Tunnel works, and once you understand the model you stop poking holes in your firewall for self-hosted apps.

@@ -1,8 +1,8 @@
 ---
 title: "PcPrice.watch"
 description: "PC component price tracking across eBay marketplaces with automated data pipeline and intelligent filtering."
-date: "12/01/2024"
-url: "https://pcprice.watch"
+date: "2024-12-01"
+demoURL: "https://pcprice.watch"
 ---
 
 A full-stack web application that tracks PC component prices across multiple eBay marketplaces, helping users find the best deals on computer hardware.

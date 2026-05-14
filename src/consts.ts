@@ -1,4 +1,4 @@
-import type { Site, Metadata, Socials } from "./types";
+import type { Site, Metadata, Socials, Skills } from "./types";
 
 export const SITE: Site = {
   NAME: "Marios Athanasiadis",
@@ -10,7 +10,7 @@ export const SITE: Site = {
 
 export const HOME: Metadata = {
   TITLE: "Home",
-  DESCRIPTION: "Senior Site Reliability Engineer and DevOps specialist with expertise in cloud infrastructure, automation, and system reliability.",
+  DESCRIPTION: "Senior SRE, infrastructure builder, and occasional writer. Currently at Kaizen Gaming.",
 };
 
 export const BLOG: Metadata = {
@@ -29,12 +29,26 @@ export const PROJECTS: Metadata = {
 };
 
 export const SOCIALS: Socials = [
-  { 
-    NAME: "github",
-    HREF: "https://github.com/MariosTheof"
+  {
+    NAME: "github @MariosTheof",
+    HREF: "https://github.com/MariosTheof",
   },
-  { 
+  {
     NAME: "linkedin",
     HREF: "https://linkedin.com/in/mariostheof",
-  }
+  },
+  {
+    NAME: "rss",
+    HREF: "/rss.xml",
+  },
+];
+
+export const SKILLS: Skills = [
+  { group: "Cloud", items: ["Azure", "AWS", "OCI", "GCP"] },
+  { group: "IaC", items: ["Terraform", "Ansible"] },
+  { group: "Containers", items: ["Docker", "Kubernetes", "OpenShift", "k3s", "Helm", "ArgoCD"] },
+  { group: "Observability", items: ["Prometheus", "Grafana", "Loki", "Graylog"] },
+  { group: "Data", items: ["PostgreSQL", "MySQL", "Redis", "Clickhouse", "Databricks", "Kafka", "RabbitMQ"] },
+  { group: "Networking & Edge", items: ["Cloudflare", "nginx", "Networking"] },
+  { group: "Languages", items: ["Python", "PHP / Laravel", "Bash", "JavaScript / Vue"] },
 ];

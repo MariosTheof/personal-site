@@ -1,11 +1,13 @@
 ---
 import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
 import Container from "@components/Container.astro";
 import PageLayout from "@layouts/PageLayout.astro";
 import ArrowCard from "@components/ArrowCard.astro";
 import Link from "@components/Link.astro";
 import { dateRange } from "@lib/utils";
-import { SITE, HOME, SOCIALS } from "@consts";
+import { SITE, HOME, SOCIALS, SKILLS } from "@consts";
+import marios from "../assets/marios.jpg";
 
 const blog = (await getCollection("blog"))
   .filter(post => !post.data.draft)
@@ -38,25 +40,52 @@ const work = await Promise.all(
     <div class="space-y-16">
       <section>
         <article class="space-y-4">
+          <Image
+            src={marios}
+            alt="Marios Athanasiadis"
+            class="animate rounded-lg w-full max-w-[600px] h-auto"
+            widths={[480, 800, 1200]}
+            sizes="(max-width: 640px) 100vw, 600px"
+            loading="eager"
+          />
           <p class="animate">
-            I'm a Senior Site Reliability Engineer and DevOps specialist currently working at
-            <Link href="https://kaizengaming.com" aria-label="Kaizen Gaming" external>
-              Kaizen Gaming
-            </Link>.
-            I focus on building reliable, scalable infrastructure and implementing automation
-            solutions across cloud platforms including Azure.
+            Senior SRE at Kaizen Gaming. I keep production OpenShift quiet on Azure and bare metal,
+            write Terraform that doesn't drift, and untangle Cloudflare when the edge does something interesting.
           </p>
           <p class="animate">
-            With over 5 years of experience in software engineering and DevOps, I specialize in
-            containerization with Docker and Kubernetes, infrastructure as code using Terraform and Ansible,
-            and comprehensive monitoring solutions with Prometheus, Grafana, and Loki.
+            Outside work I'm the kind of person who'd rather build a thing than read about one.
+            <Link href="https://pcprice.watch" aria-label="PcPrice.watch" external>PcPrice.watch</Link>
+            hunts cheap PC parts across eBay.
+            <Link href="https://buildero.gr" aria-label="Buildero" external>Buildero</Link>
+            is a permit-lead SaaS for Greek engineers.
+            All of it — plus this site — runs on a 2-node Kubernetes cluster that costs me $0 a month.
           </p>
           <p class="animate">
-            I'm passionate about automation, system reliability, and building robust CI/CD pipelines
-            that enable teams to deliver software efficiently and safely. When I'm not optimizing
-	    infrastructure, you can find me working on personal projects like <Link href="pcprice.watch" aria-label="pcprice.watch" external> pcrice.watch </Link>
+            The blog is where the lessons go. Usually when the docs left a hole I had to dig out of.
           </p>
         </article>
+      </section>
+
+      <section class="animate space-y-6">
+        <h5 class="font-semibold text-black dark:text-white">
+          Skills
+        </h5>
+        <ul class="flex flex-col gap-3">
+          {SKILLS.map(({ group, items }) => (
+            <li class="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+              <span class="text-sm font-semibold text-black dark:text-white shrink-0 min-w-[7rem]">
+                {group}
+              </span>
+              <span class="flex flex-wrap gap-1.5">
+                {items.map(item => (
+                  <span class="text-xs px-2 py-0.5 rounded-md bg-black/5 dark:bg-white/10 text-black/80 dark:text-white/80">
+                    {item}
+                  </span>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section class="animate space-y-6">
@@ -80,27 +109,18 @@ const work = await Promise.all(
       <section class="animate space-y-6">
         <div class="flex flex-wrap gap-y-2 items-center justify-between">
           <h5 class="font-semibold text-black dark:text-white">
-            Education
+            Recent projects
           </h5>
+          <Link href="/projects">
+            See all projects
+          </Link>
         </div>
-        <ul class="flex flex-col space-y-4">
-          <li>
-            <div class="text-sm opacity-75">
-              2014
-            </div>
-            <div class="font-semibold text-black dark:text-white">
-              Athens University of Economics & Business
-            </div>
-            <div class="text-sm opacity-75">
-              Computer Science
-            </div>
-            <article>
-              <p class="text-sm mt-2">
-                Focused on software engineering, algorithms, and system design. Developed strong foundations in programming, 
-                data structures, and computer systems architecture.
-              </p>
-            </article>
-          </li>
+        <ul class="flex flex-col gap-4">
+          {projects.map(project => (
+            <li>
+              <ArrowCard entry={project} />
+            </li>
+          ))}
         </ul>
       </section>
 
@@ -134,21 +154,16 @@ const work = await Promise.all(
       </section>
 
       <section class="animate space-y-6">
-        <div class="flex flex-wrap gap-y-2 items-center justify-between">
-          <h5 class="font-semibold text-black dark:text-white">
-            Recent projects
-          </h5>
-          <Link href="/projects">
-            See all projects
-          </Link>
+        <h5 class="font-semibold text-black dark:text-white">
+          Education
+        </h5>
+        <div>
+          <div class="text-sm opacity-75">2014</div>
+          <div class="font-semibold text-black dark:text-white">
+            Athens University of Economics & Business
+          </div>
+          <div class="text-sm opacity-75">Computer Science</div>
         </div>
-        <ul class="flex flex-col gap-4">
-          {projects.map(project => (
-            <li>
-              <ArrowCard entry={project} />
-            </li>
-          ))}
-        </ul>
       </section>
 
       <section class="animate space-y-4">

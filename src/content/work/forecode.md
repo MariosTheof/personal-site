@@ -1,8 +1,8 @@
 ---
 company: "Forecode S.A."
 role: "DevOps Engineer"
-dateStart: "01/01/2024"
-dateEnd: "06/01/2025"
+dateStart: "2024-01-01"
+dateEnd: "2025-06-01"
 ---
 
 • Automated the deployment of a Laravel application across multiple remote custom Virtual Machines, configured and set up Linux servers, and utilized Docker containers with self-healing solutions to address limited connectivity and bandwidth constraints.
