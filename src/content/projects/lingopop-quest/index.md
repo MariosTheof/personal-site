@@ -2,7 +2,7 @@
 title: "LingoPop.quest"
 description: "Browser extension for seamless language learning during web browsing using spaced repetition algorithms."
 date: "2023-12-01"
-demoURL: "https://lingopop.quest"
+demoURL: "https://lingopop.istos.dev"
 ---
 
 A innovative browser extension that transforms casual web browsing into an opportunity for continuous language learning through strategic vocabulary popups and spaced repetition.
