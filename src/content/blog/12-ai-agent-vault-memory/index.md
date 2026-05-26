@@ -6,19 +6,19 @@ date: "2026-05-26"
 
 Every Claude Code session used to start the same way. I'd open a terminal, type something like "add a retry handler to the lingopop backend," and get back: "I don't have information about lingopop in this session. Could you describe the project?" Fifteen minutes of re-explaining architecture later, we'd finally do the actual work.
 
-That's fixed now. The session I ran this morning opened with the CI pipeline spec, the k8s namespace, the HeatWave DSN gotcha, and the exact deploy command — all without me saying a word about any of it. The fix isn't a new model or a longer context window. It's a structured vault that lives on disk and a set of rules that tell the agent exactly where to look.
+That's fixed now. The session I ran this morning opened with the CI pipeline spec, the k3s namespace, the HeatWave DSN catch, and the exact deploy command — all without me saying a word about any of it. The fix isn't a new model or a longer context window. It's a structured vault that lives on disk and a set of rules that tell the agent exactly where to look.
 
 Here's the whole setup.
 
 > **Key Takeaways**
-> - 84% of developers use or plan to use AI tools, but only 29% trust AI accuracy — down from 40% in 2024 ([Stack Overflow 2025 Developer Survey](https://survey.stackoverflow.co/2025/ai), n=49,000+). The trust gap is mostly a context problem, not a model problem.
+> - 84% of developers use or plan to use AI tools, but only 29% trust AI accuracy — down from 40% the year before ([Stack Overflow Developer Survey](https://survey.stackoverflow.co/2025/ai), n=49,000+). The trust gap is mostly a context problem, not a model problem.
 > - A PARA-structured vault with per-project `index.md` files gives every agent session a read target before the first prompt.
 > - A "compile pass" — triggered explicitly, never autonomous — keeps the vault fresh by routing daily captures to the right project pages.
 > - The agentmemory MCP server closes the write loop: decisions made during a session get persisted back without manual note-taking.
 
 ## Why do AI coding tools keep forgetting your project?
 
-According to the Stack Overflow 2025 Developer Survey (n=49,000+), 84% of developers now use or plan to use AI coding tools, and 51% use them daily. Yet trust in AI accuracy fell from 40% in 2024 to just 29% in 2025 ([Stack Overflow](https://survey.stackoverflow.co/2025/ai), 2025). That's a trust collapse happening right alongside an adoption boom.
+According to the Stack Overflow Developer Survey (n=49,000+), 84% of developers now use or plan to use AI coding tools, and 51% use them daily. Yet trust in AI accuracy fell from 40% to just 29% — the lowest on record ([Stack Overflow](https://survey.stackoverflow.co/2025/ai)). That's a trust collapse happening right alongside an adoption boom.
 
 <figure style="margin: 2.5rem 0;">
 <svg viewBox="0 0 600 280" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dual-line chart showing AI tool adoption rising from 70% in 2023 to 84% in 2025 while developer trust fell from 55% in 2023 to 29% in 2025, based on Stack Overflow 2025 Developer Survey">
@@ -66,17 +66,17 @@ According to the Stack Overflow 2025 Developer Survey (n=49,000+), 84% of develo
 </svg>
 </figure>
 
-Most commentary blames the models. I don't think that's right. The real problem is context loss between sessions. Every new conversation starts blank. The agent has no memory of your stack, your deploy targets, your architectural decisions from last week, or the gotcha you hit with HeatWave's TLS requirement. So it hallucinates, guesses wrong, or asks you to explain things you've already explained a dozen times.
+Most commentary blames the models. I don't think that's right. The real problem is context loss between sessions. Every new conversation starts blank. The agent has no memory of your stack, your deploy targets, your architectural decisions from last week, or the TLS snag HeatWave throws at you. So it hallucinates, guesses wrong, or asks you to explain things you've already explained a dozen times.
 
 ![Developer planning and organizing project context on a whiteboard with structured diagrams](https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=1200&h=630&fit=crop&q=80)
 
-A METR study (arXiv:2507.09089, July 2025) found experienced developers were 19% *slower* with AI tools than without them. Not because the tools are bad. Because experienced devs have complex, multi-file projects with history and context that the agent can't see. The re-explanation overhead eats the time savings.
+A METR study (arXiv:2507.09089) found experienced developers were 19% *slower* with AI tools than without them. Not because the tools are bad. Because experienced devs have complex, multi-file projects with history and context that the agent can't see. The re-explanation overhead eats the time savings.
 
 <!-- [UNIQUE INSIGHT] -->
 
 The trust collapse and the productivity regression are both pointing at the same root cause: the quality of context the agent receives, not the quality of the model. Fix the context layer and you fix both problems. That's what the vault does.
 
-> **Citation capsule:** According to the Stack Overflow 2025 Developer Survey (n=49,000+), 84% of developers use or plan to use AI tools and 51% use them daily, yet trust in AI accuracy has fallen from 40% in 2024 to just 29% in 2025. The METR study (arXiv:2507.09089, July 2025) found experienced developers are 19% slower with AI tools, suggesting context overhead, not model quality, is the primary drag on productivity.
+> **Citation capsule:** According to the Stack Overflow Developer Survey (n=49,000+), 84% of developers use or plan to use AI tools and 51% use them daily, yet trust in AI accuracy has fallen from 40% to just 29% — the lowest recorded. The METR study (arXiv:2507.09089) found experienced developers are 19% slower with AI tools, suggesting context overhead, not model quality, is the primary drag on productivity.
 
 [INTERNAL-LINK: my $0 OCI k3s cluster → post 09 "How I Run This Site on a $0 Kubernetes Cluster"]
 
@@ -124,7 +124,7 @@ My vault lives at `~/vault/` and follows a PARA structure. The folders that matt
 ~/vault/
   CLAUDE.md                    # global agent rules, folder map
   Projects/
-    lingopop/index.md          # deploy commands, stack, gotchas, TODOs
+    lingopop/index.md          # deploy commands, stack, known issues, TODOs
     pcprice.watch/index.md
     diavgeia-monitor/index.md
     car-statistics-greece/index.md
@@ -175,7 +175,7 @@ The compile pass is what keeps mine current. When I say "compile inbox," the age
 
 1. Reads every file under `Inbox/` (skipping `_processed/`).
 2. For each item, decides which existing PARA page it updates — or whether it creates a new one.
-3. **Integrates, doesn't append.** Operational facts — deploy commands, hosts, URLs, gotchas — get routed to the relevant `Projects/<name>/index.md` and written into the right section, not pasted at the bottom.
+3. **Integrates, doesn't append.** Operational facts — deploy commands, hosts, URLs, tricky bits — get routed to the relevant `Projects/<name>/index.md` and written into the right section, not pasted at the bottom.
 4. Flags contradictions with `> [!warning]` blocks. If a new capture says "HeatWave IP is 10.0.3.200" and the existing vault says "10.0.3.117," the agent surfaces that rather than silently overwriting.
 5. Moves the raw item to `Inbox/_processed/<YYYY-MM-DD>/` and commits.
 
@@ -191,7 +191,7 @@ The "never autonomous" rule matters here. The compile pass has real write access
 
 ## The agentmemory MCP: closing the write loop
 
-The Model Context Protocol has gone from a curiosity to infrastructure fast. By March 2026, MCP had reached 97 million monthly SDK downloads, up from roughly 22 million in April 2025. The server registry grew from 1,200 to 9,400+ servers between Q1 2025 and April 2026 ([Digital Applied / Anthropic](https://www.digitalapplied.com/blog/mcp-adoption-statistics-2026-model-context-protocol), 2026). That kind of adoption curve usually means the abstraction is genuinely useful.
+The Model Context Protocol has gone from a curiosity to infrastructure fast. By March 2026, MCP had reached 97 million monthly SDK downloads, up from roughly 22 million a year earlier. The server registry grew from 1,200 to 9,400+ servers over the same period ([Digital Applied / Anthropic](https://www.digitalapplied.com/blog/mcp-adoption-statistics-2026-model-context-protocol), 2026). That kind of adoption curve usually means the abstraction is genuinely useful.
 
 <figure style="margin: 2.5rem 0;">
 <svg viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bar chart showing MCP monthly SDK downloads growth: 2 million in November 2024, 22 million in April 2025, 45 million in July 2025, and 97 million in March 2026, based on Digital Applied and Anthropic data">
@@ -232,7 +232,7 @@ The Model Context Protocol has gone from a curiosity to infrastructure fast. By 
 </svg>
 </figure>
 
-The agentmemory MCP server closes a gap the vault alone doesn't cover: write-back from live sessions. The vault holds what I've explicitly captured. But every session produces decisions, discoveries, and gotchas that I never get around to capturing. The agentmemory hooks intercept those and persist them automatically.
+The agentmemory MCP server closes a gap the vault alone doesn't cover: write-back from live sessions. The vault holds what I've explicitly captured. But every session produces decisions, discoveries, and things that bit me that I never get around to capturing. The agentmemory hooks intercept those and persist them automatically.
 
 Setup is two commands:
 
@@ -247,9 +247,9 @@ That adds 12 hooks to Claude Code and starts an MCP server on `:3111`. The hooks
 
 Here's the nuance most write-ups miss: agentmemory and the compile pass operate on different time horizons. The compile pass handles deliberate, structured updates — things I've thought about, written down, and want integrated cleanly. agentmemory handles ephemeral session state: a command that worked, a decision made mid-debug, a file path I found by trial and error. They complement each other rather than competing.
 
-One gotcha: the hooks fail silently if the MCP server isn't running. There's no error; the hooks just don't fire. I keep the server in a tmux pane to avoid losing session state. If you restart your machine and forget to restart the server, your next session won't be persisting anything. Worth adding it to whatever autostart mechanism you use.
+One catch: the hooks fail silently if the MCP server isn't running. There's no error; the hooks just don't fire. I keep the server in a tmux pane to avoid losing session state. If you restart your machine and forget to restart the server, your next session won't be persisting anything. Worth adding it to whatever autostart mechanism you use.
 
-> **Citation capsule:** The Model Context Protocol reached 97 million monthly SDK downloads by March 2026, growing from roughly 2 million in November 2024. The server registry expanded from 1,200 to over 9,400 entries between Q1 2025 and April 2026 ([Digital Applied / Anthropic](https://www.digitalapplied.com/blog/mcp-adoption-statistics-2026-model-context-protocol), 2026). This adoption trajectory positions MCP as the standard persistence layer for stateful AI agent workflows.
+> **Citation capsule:** The Model Context Protocol reached 97 million monthly SDK downloads by March 2026, growing from roughly 2 million in November 2024. The server registry expanded from 1,200 to over 9,400 entries in just over a year ([Digital Applied / Anthropic](https://www.digitalapplied.com/blog/mcp-adoption-statistics-2026-model-context-protocol), 2026). This adoption trajectory positions MCP as the standard persistence layer for stateful AI agent workflows.
 
 ## The acid test: does it actually work?
 
@@ -257,7 +257,7 @@ Fresh terminal. No preamble, no "here's what I'm working on." Just: "What's the 
 
 Before the vault: "I don't have information about lingopop in this session. Could you describe the project and its deployment setup?"
 
-After: The agent reads `~/vault/Projects/lingopop/index.md` from the CLAUDE.md pointer, finds the CI/CD section, and responds with the actual answer. CI triggers on push to `main` touching `backend/**`. GitHub Actions builds an arm64 image via `docker buildx`, pushes to `ghcr.io/mariostheof/lingopop:{sha}`, then runs `kubectl set image deployment/lingopop-backend` in the `lingopop` namespace and waits for rollout status. The pull secret requirement is flagged. The HeatWave TLS gotcha is mentioned.
+After: The agent reads `~/vault/Projects/lingopop/index.md` from the CLAUDE.md pointer, finds the CI/CD section, and responds with the actual answer. CI triggers on push to `main` touching `backend/**`. GitHub Actions builds an arm64 image via `docker buildx`, pushes to `ghcr.io/mariostheof/lingopop:{sha}`, then runs `kubectl set image deployment/lingopop-backend` in the `lingopop` namespace and waits for rollout status. The pull secret requirement is flagged. The HeatWave TLS catch is flagged.
 
 <!-- [PERSONAL EXPERIENCE] -->
 
@@ -293,7 +293,7 @@ Not completely. agentmemory captures session state automatically, which is good 
 
 The vault didn't solve an AI problem. It solved an information architecture problem, and the AI benefit was a side effect of actually organizing project context well.
 
-The Stack Overflow trust numbers are a signal worth taking seriously. Only 29% of developers trust AI accuracy ([Stack Overflow](https://survey.stackoverflow.co/2025/ai), 2025). But mistrust built on context rot is different from mistrust built on model limitations. One of those you can fix with a markdown file and a compile trigger.
+The Stack Overflow trust numbers are a signal worth taking seriously. Only 29% of developers trust AI accuracy ([Stack Overflow](https://survey.stackoverflow.co/2025/ai)). But mistrust built on context rot is different from mistrust built on model limitations. One of those you can fix with a markdown file and a compile trigger.
 
 The setup I've described: a PARA vault at `~/vault/`, per-project `index.md` files structured for AI consumption, a `CLAUDE.md` with standing orders, an explicit compile pass for integration, and the agentmemory MCP for session write-back. Nothing in that stack requires a subscription or a hosted service. It runs on the same [free OCI cluster](/blog/09-zero-dollar-kubernetes-cluster) as everything else, costs nothing, and has eliminated the re-explanation ritual entirely.
 
