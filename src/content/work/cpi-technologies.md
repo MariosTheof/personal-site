@@ -1,8 +1,8 @@
 ---
 company: "CPI Technologies GmbH"
-role: "Software Engineer (DevOps / Infra)"
+role: "DevOps / Software Engineer"
 dateStart: "2022-02-01"
-dateEnd: "2024-08-01"
+dateEnd: "2024-02-01"
 ---
 
 • Developed and maintained e-commerce web applications using PHP, Laravel, Python and managed databases with MariaDB, ClickhouseDB, Redis.

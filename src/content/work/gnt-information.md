@@ -1,7 +1,7 @@
 ---
 company: "G.N.T. Information Systems S.A."
 role: "Software Engineer"
-dateStart: "2019-03-01"
+dateStart: "2019-02-01"
 dateEnd: "2019-10-01"
 ---
 
