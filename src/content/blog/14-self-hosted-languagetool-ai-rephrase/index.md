@@ -1,74 +1,74 @@
 ---
-title: "I Found LanguageTool's Hidden AI Rephrase Plumbing and Used It for Free"
-description: "LanguageTool's open-source server ships an undocumented gRPC extension point that its own paid Rephrase feature runs on. Here's how I used it to add free, self-hosted AI rewrites to my LanguageTool server — plus two bugs that only showed up in real use."
+title: "How to Self-Host Grammarly (Including the AI Rewrite Feature)"
+description: "A practical guide to replacing Grammarly with a fully self-hosted, free setup: a LanguageTool server for grammar and spelling, plus an open-source gRPC sidecar that adds Grammarly's AI rephrasing feature on top."
 date: "2026-08-04"
 ---
 
-I run a self-hosted [LanguageTool](https://languagetool.org/) server — a genuinely good, free, private alternative to Grammarly for grammar and spelling checking. It catches typos, subject-verb agreement errors, the usual. What it doesn't do, in its open-source form, is the thing people actually love Grammarly for: taking an awkward, wordy sentence and handing back a better one.
-
-That's an LLM-shaped problem, not a grammar-rules-shaped one. LanguageTool's commercial "Premium" tier has it. The open-source self-hosted build doesn't. I wanted it anyway, without paying for their SaaS and without bolting on some separate rewrite tool I'd have to remember to open. This is how I got there — including two bugs that took real debugging to catch, not just reading the docs harder.
+Grammarly does two things people actually pay for: it catches grammar and spelling mistakes, and it rewrites awkward sentences into better ones. You can get both, fully self-hosted, for free, without sending your writing to anyone's servers. Here's exactly how.
 
 > **Key Takeaways**
-> - LanguageTool's open-source jar ships a fully-compiled-in gRPC extension point (`GRPCRule`/`RemoteRuleConfig`) that its own commercial Rephrase feature runs on — no fork, no recompile, works for every language out of the box.
-> - Tagging the sidecar's matches with LanguageTool's own `picky` level tag made AI rewrites show up automatically in my existing browser extension, with zero configuration — most LanguageTool clients send `level=picky` by default.
-> - Free-tier reasoning models can burn their entire token budget "thinking" and return an empty answer — one model I benchmarked took 65 seconds per sentence and was unusable.
-> - A sequential-per-sentence bug silently broke real usage even though every `curl` test passed: three sentences at ~4 seconds each summed past LanguageTool's own timeout. Fixed by making the LLM calls concurrent.
-> - The whole thing is open source and backend-agnostic — swap in Claude, GPT, or a local model with a one-line change.
+> - Part 1 alone — a self-hosted [LanguageTool](https://languagetool.org/) server plus its official browser extension — replaces Grammarly's grammar/spelling checking entirely, for free, privately.
+> - Part 2 adds the feature Grammarly is actually known for: full-sentence AI rewrites, via an open-source gRPC sidecar I built and am sharing here.
+> - The AI rewrite feature activates automatically in your existing LanguageTool extension — no separate tool, no extra UI, nothing to remember to open.
+> - The whole setup runs on a spare machine or a small VM for effectively $0/month.
 
-## The constraint that mattered: one tool, not two
+## What you're building
 
-My first instinct was the obvious one: stand up a small service that calls an LLM and wraps it in a browser extension or bookmarklet. That works, but it's a *second thing* — a separate UI, a separate mental model, something I'd have to remember exists and reach for. I already have a LanguageTool client I use every day. I wanted the AI suggestion to just show up there, mixed in with the normal grammar and spelling matches, not living somewhere else.
+Two pieces, layered:
 
-That constraint turned out to be the interesting part of this project.
+1. **A self-hosted LanguageTool server** — the grammar/spelling engine, talking to the official LanguageTool browser extension (or any editor plugin that supports a custom server). This alone covers most of what people use Grammarly for, day to day.
+2. **An AI rephrase sidecar** ([source here, MIT licensed](https://github.com/MariosTheof/languagetool-ai-rephrase)) — a small gRPC service that plugs into LanguageTool and adds the one feature the open-source build doesn't have: rewriting a clunky sentence into a better one.
 
-## The discovery: LanguageTool already has this plumbing
+You can stop after part 1 and already have a complete Grammarly replacement for grammar/spelling. Part 2 is what closes the gap with Grammarly's paid tier.
 
-Before building anything, I went looking at LanguageTool's actual source rather than its docs, on the theory that their own commercial Rephrase feature had to be implemented as *something* inside the same codebase. It is.
+## Part 1: A self-hosted grammar and spelling checker
 
-`languagetool-core` ships a class called `GRPCRule` (extending `RemoteRule`), wired in by default for every language via `Language.java`'s `getRelevantRemoteRules()` — no fork, no recompile, works on the stock jar. Point a config file (`remoteRulesFile`) at a gRPC server implementing LanguageTool's own `MLServer.Match` interface, and its responses come back as ordinary rule matches in the normal `/v2/check` JSON — structurally indistinguishable from a built-in spelling fix.
+Run LanguageTool's server. The [`erikvl87/languagetool`](https://hub.docker.com/r/erikvl87/languagetool) Docker image is the easiest path — it listens on port 8010 and is public/CORS-open by default:
 
-The tell that this is exactly what their paid tier uses internally: the `.proto` file's `ProcessingOptions.Level` enum lists `picky, academic, clarity, professional, creative, customer, jobapp, objective, elegant` — LanguageTool Premium's actual named rewrite styles.
-
-So the plan became: write a gRPC server that speaks this protocol, have it call an LLM, and let LanguageTool do the rest.
-
-## Architecture
-
-```
-Your text
-   │
-   ▼
-LanguageTool /v2/check  ──────────────►  ai-rephrase-grpc (my sidecar)
-   │  (grammar/spelling rules,                  │
-   │   as always)                               ▼
-   │                                       an LLM
-   │                                             │
-   ◄─────────────── one JSON response ───────────┘
+```bash
+docker run -d -p 8010:8010 erikvl87/languagetool
 ```
 
-The sidecar is a small Go service. For every sentence LanguageTool sends it, it asks an LLM to rewrite it, and returns the rewrite as a `suggestedReplacement` spanning the whole sentence — same shape LanguageTool uses for a one-word spelling suggestion, just longer.
+Then install the [official LanguageTool browser extension](https://languagetool.org/) (Chrome, Firefox, Edge, Opera all supported) and point it at your server:
 
-I picked [OpenCode Zen](https://opencode.ai/zen/)'s free tier as the LLM backend, mostly out of curiosity about how far "free" actually goes. More on that below — it's not a simple story.
+1. Extension settings → **Advanced Settings** → **LanguageTool Server** → **Other server**
+2. Enter `http://your-server:8010/v2` — the `/v2` suffix matters; without it you'll get a cryptic 400 error, because the extension posts to a legacy endpoint that isn't `/v2/check`.
 
-## Making it disappear into the tool I already use
+That's it. You now have private, self-hosted grammar and spelling checking wired into your browser, with zero recurring cost. If English ngram-informed suggestions matter to you (better "their/there/they're"-style confusion detection), LanguageTool's setup docs cover downloading the optional ngram dataset — not required for basic checking.
 
-The naive way to gate this — require a client to pass `enabledRules=AI_REPHRASE` on each request — technically satisfies "it's the same tool," but in practice nothing would show up unless I manually added a parameter, which is just the bolted-on-tool problem wearing a costume.
+## Part 2: Adding the AI rewrite feature
 
-The fix was tagging the sidecar's matches with LanguageTool's own `Tag.picky`. LanguageTool's rule-activation filter excludes `picky`-tagged rules entirely at `level=DEFAULT` — not just hiding the result, the remote call never happens — and includes them at `level=PICKY`. It turns out most LanguageTool clients, including the official browser extension, send `level=picky` by default, without the user ever touching a setting.
+This is the part LanguageTool's open-source build is missing, and it turns out LanguageTool itself ships the plumbing to add it — an undocumented gRPC extension point (`GRPCRule`) that its own commercial Premium tier uses internally for its rewrite-style features. I built a small server that speaks that protocol and calls an LLM, and open-sourced it:
 
-Net effect: once deployed, AI rewrites just started appearing in my actual browser extension. Nothing to install, nothing to configure, nothing to remember to open.
+**[github.com/MariosTheof/languagetool-ai-rephrase](https://github.com/MariosTheof/languagetool-ai-rephrase)** (MIT)
 
-The honest tradeoff: this also activates for *any* client hitting the endpoint in picky mode, not just mine — there's no way to scope "picky mode" to one user at this layer. I accepted it because the LLM backend is free; if you're paying per token, you'd want a rate limit or a budget cap here.
+```bash
+git clone https://github.com/MariosTheof/languagetool-ai-rephrase
+cd languagetool-ai-rephrase
+docker build -t languagetool-ai-rephrase .
+```
 
-## Two bugs that only showed up in real use
+Run it alongside your LanguageTool server, point LanguageTool's `remoteRulesFile` config at the included example config, set an API key for whichever LLM you want to use, and you're done — the repo's README has the full step-by-step.
 
-Both of these passed every test I threw at them via `curl` and only broke once I actually used the thing normally, in the extension.
+The detail worth calling out: **you don't need to change anything in the browser extension.** The sidecar tags its suggestions with LanguageTool's own `picky` rewrite-level tag, and most LanguageTool clients — including the official extension — already request picky-level checking by default. So once the sidecar is running, AI rewrite suggestions just start appearing next to your normal grammar and spelling matches. No new UI, no plugin, no bookmarklet.
 
-**Reasoning models can burn their whole budget without answering.** Some free-tier models — including the one I ended up using — emit an internal chain-of-thought before the final answer. One free model I benchmarked took **65 seconds** and roughly 950 tokens of reasoning to rewrite a single sentence, which is obviously unusable. The model I picked instead is much faster, but even it occasionally exhausts a tight `max_tokens` budget mid-reasoning and returns an empty final answer with `finish_reason: "length"` — no error, just silence. Fixed by giving it enough headroom to actually finish thinking.
+Verify it's working:
 
-**Sequential per-sentence calls silently broke multi-sentence text.** My first implementation looped over every sentence in a request one at a time. A single test sentence always looked fine. But LanguageTool sends a whole paragraph's sentences in one request, and three sentences at roughly 4 seconds each summed to about 12 seconds — comfortably past LanguageTool's own timeout for the whole remote-rule call. The result: the extension would silently show no AI suggestions, with no visible error anywhere in the UI, even though the sidecar's own logs showed it working. The fix was running every sentence in a request concurrently instead of sequentially, so total latency tracks the *slowest* sentence, not the sum. This is the kind of bug that doesn't show up in "does the API work" testing and only appears once you use the real client with real, multi-sentence text.
+```bash
+curl 'http://localhost:8010/v2/check' \
+  --data-urlencode 'text=Due to the fact that we were unable to obtain the necessary permissions, the project was ultimately not able to proceed as originally planned.' \
+  --data-urlencode 'language=en-US' \
+  --data-urlencode 'level=picky'
+```
 
-## Try it
+Look for a match with `"id": "AI_REPHRASE"` in the response.
 
-The whole thing is open source: [github.com/MariosTheof/languagetool-ai-rephrase](https://github.com/MariosTheof/languagetool-ai-rephrase) (MIT). It's backend-agnostic — I used a free model, but it's a plain HTTP call under the hood, so pointing it at Claude, GPT, or a local Ollama model is a one-line change.
+## Choosing a model
 
-If you're already self-hosting LanguageTool, this is maybe an afternoon of work to add. If you're not, and you've been paying for Grammarly just for the rewrite feature, it might be worth reconsidering what you actually need a subscription for.
+The repo ships configured for a free-tier model by default, and works out of the box with it — good for trying this out at zero cost. If you want faster, more reliable rewrites, pointing it at a real hosted model (Claude Haiku, GPT-4o-mini) is a one-line config change and costs well under $10/month at personal-use volume, since each request is one sentence in, one sentence out. The README has a latency comparison across several free models if you want to stay in free-tier territory — some are much slower than others.
+
+## What this costs you
+
+A small VM or a spare machine to run LanguageTool and the sidecar on, and either nothing (free-tier LLM) or a few dollars a month (a real model). No subscription, no account, no data leaving your own infrastructure.
+
+Repo's here if you want to try it or contribute: [github.com/MariosTheof/languagetool-ai-rephrase](https://github.com/MariosTheof/languagetool-ai-rephrase).
