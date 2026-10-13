@@ -1,0 +1,53 @@
+---
+import PageLayout from "@layouts/PageLayout.astro";
+import Container from "@components/Container.astro";
+import Link from "@components/Link.astro";
+import { SITE } from "@consts";
+---
+
+<PageLayout title="Privacy" description={`Privacy policy for ${SITE.NAME}'s site and self-hosted tools on istos.dev.`}>
+  <Container>
+    <div class="animate space-y-6">
+      <h1 class="text-2xl font-semibold text-black dark:text-white">Privacy policy</h1>
+      <p class="text-sm">Last updated: 13 October 2026</p>
+
+      <section class="space-y-3">
+        <h2 class="font-semibold text-black dark:text-white">This website</h2>
+        <p>
+          marios.istos.dev counts page views with a self-hosted instance of Umami. Umami sets no cookies and
+          stores no personal data. It records the page, referrer, browser type and country. Nothing is sold or
+          shared, and no third-party advertising or tracking scripts run on this site.
+        </p>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="font-semibold text-black dark:text-white">Self-hosted tools that sign in with Google</h2>
+        <p>
+          I run a few private tools on istos.dev for my own sites, such as an SEO dashboard and analytics helpers.
+          They sign in with Google to read my own Google Search Console and Google Analytics data. Only I use them.
+        </p>
+        <ul class="list-disc pl-6 space-y-1">
+          <li>Access is read-only. The tools can view Search Console and Analytics reports and cannot change anything.</li>
+          <li>The data is used only to show reports to me. It stays on servers I run and is not sold, shared, or used for advertising.</li>
+          <li>Sign-in tokens are kept only on those servers and stop working as soon as access is revoked.</li>
+          <li>
+            You can revoke access at any time from your
+            <Link href="https://myaccount.google.com/permissions" external>Google Account permissions</Link>.
+          </li>
+        </ul>
+        <p>
+          Use of information received from Google APIs follows the
+          <Link href="https://developers.google.com/terms/api-services-user-data-policy" external>Google API Services User Data Policy</Link>,
+          including the Limited Use requirements.
+        </p>
+      </section>
+
+      <section class="space-y-3">
+        <h2 class="font-semibold text-black dark:text-white">Contact</h2>
+        <p>
+          Questions or deletion requests: <Link href={`mailto:${SITE.EMAIL}`}>{SITE.EMAIL}</Link>.
+        </p>
+      </section>
+    </div>
+  </Container>
+</PageLayout>
